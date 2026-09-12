@@ -1,10 +1,12 @@
 fastapi>=0.115
 uvicorn[standard]>=0.32
-beanie>=1.26
-motor>=3.5
+beanie>=2.2,<3
+# Beanie 2 uses PyMongo's native async client. Do not install Motor: it is
+# incompatible with Beanie 2's append_metadata() initialization.
+pymongo>=4.11,!=4.15,<5
 pydantic>=2.8
 pydantic-settings>=2.4
 python-jose[cryptography]>=3.3
-passlib[bcrypt]>=1.7.4
+bcrypt>=5.0,<6
 python-multipart>=0.0.9
 python-dotenv>=1.0

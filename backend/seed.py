@@ -2,10 +2,8 @@ import asyncio
 from datetime import date
 
 from beanie import init_beanie
-from motor.motor_asyncio import AsyncIOMotorClient
-
 from app.config import settings
-from app.database import DOCUMENT_MODELS
+from app.database import DOCUMENT_MODELS, create_mongo_client
 from app.models.area import Area, AreaMapPos
 from app.models.contract import Contract
 from app.models.customer import Customer
@@ -17,7 +15,8 @@ from app.security import hash_password
 
 
 async def seed() -> None:
-    client = AsyncIOMotorClient(settings.mongo_uri)
+    client = create_mongo_client()
+    await client.admin.command({"ping": 1})
     await init_beanie(database=client[settings.mongo_db], document_models=DOCUMENT_MODELS)
 
     for model in DOCUMENT_MODELS:
@@ -108,6 +107,7 @@ async def seed() -> None:
 
     print("Đã seed dữ liệu mẫu.")
     print("Tài khoản đăng nhập (mật khẩu 123456): admin, staff, ketoan, 0901234567")
+    await client.close()
 
 
 if __name__ == "__main__":

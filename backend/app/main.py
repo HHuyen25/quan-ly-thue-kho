@@ -2,7 +2,7 @@ from fastapi import FastAPI
 from fastapi.middleware.cors import CORSMiddleware
 
 from .config import settings
-from .database import init_db
+from .database import close_db, init_db
 from .routers import (
     areas,
     auth,
@@ -31,6 +31,11 @@ app.add_middleware(
 @app.on_event("startup")
 async def on_startup() -> None:
     await init_db()
+
+
+@app.on_event("shutdown")
+async def on_shutdown() -> None:
+    await close_db()
 
 
 @app.get("/api/health")

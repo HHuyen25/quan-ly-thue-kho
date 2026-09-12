@@ -16,5 +16,5 @@ class User(Document):
     customer_id: Optional[str] = None
 
     class Settings:
-        name = "users"
+        name = "account"
         indexes = [IndexModel([("username", ASCENDING)], unique=True)]

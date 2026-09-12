@@ -1,6 +1,6 @@
 # Backend — Quản lý cho thuê kho quần áo
 
-API viết bằng **Python + FastAPI**, dữ liệu lưu trên **MongoDB** (qua Beanie/Motor), xác thực bằng **JWT**. JSON trả về dùng camelCase để khớp thẳng với các type trong `frontend/src/kieu/index.ts` — frontend chỉ cần đổi `duLieuMau.ts` sang gọi API, không cần đổi field name hay cấu trúc trang (`trang/quan-tri`, `trang/nhan-vien-kho`, …).
+API viết bằng **Python + FastAPI**, dữ liệu lưu trên **MongoDB** (qua Beanie/PyMongo Async), xác thực bằng **JWT**. JSON trả về dùng camelCase để khớp thẳng với các type trong `frontend/src/kieu/index.ts` — frontend chỉ cần đổi `duLieuMau.ts` sang gọi API, không cần đổi field name hay cấu trúc trang (`trang/quan-tri`, `trang/nhan-vien-kho`, …).
 
 ## Cài đặt
 
@@ -12,7 +12,9 @@ pip install -r requirements.txt
 copy .env.example .env      # rồi sửa JWT_SECRET, MONGO_URI nếu cần
 ```
 
-Cần có MongoDB đang chạy (`mongod` cục bộ, hoặc `docker compose up -d mongo`).
+Mật khẩu được băm trực tiếp bằng `bcrypt`.
+
+Cần có dịch vụ MongoDB đang chạy cục bộ tại `mongodb://localhost:27017`.
 
 ## Chạy server
 
@@ -51,7 +53,7 @@ seed.py          Script nạp dữ liệu mẫu
 | Prefix | Vai trò được phép | Nội dung |
 |---|---|---|
 | `/api/auth` | Ai cũng gọi được | Đăng nhập, lấy thông tin bản thân |
-| `/api/users` | admin | Quản trị tài khoản |
+| `/api/users` | admin | Quản trị tài khoản (collection MongoDB: `account`) |
 | `/api/areas` | Xem: mọi role đăng nhập · Sửa: admin/staff | Khu vực kho |
 | `/api/customers` | admin/staff/accountant | Khách hàng |
 | `/api/contracts` | Xem: mọi role · Tạo/sửa: admin/staff | Hợp đồng, tự tính tiền thuê + cập nhật trạng thái khu vực |
@@ -66,7 +68,7 @@ seed.py          Script nạp dữ liệu mẫu
 
 - **Không tách `warehouses` riêng** như bản thiết kế ban đầu (`Thiết kế.docx`) — frontend hiện coi cả kho là một, chỉ quản lý theo `Area`. Có thể tách lại sau nếu mở rộng nhiều kho.
 - **Khóa ngoại là string thường** (`customerId`, `areaId`, …) thay vì `Link` của Beanie, để khớp đúng kiểu `string` bên frontend và đơn giản hơn khi serialize.
-- **Xóa mềm cho giao dịch tài chính**: hủy hóa đơn/giao dịch nên chuyển `status` sang hủy thay vì xóa — endpoint xóa cứng hiện chỉ có ở `users` và `areas`.
+- **Xóa mềm cho giao dịch tài chính**: hủy hóa đơn/giao dịch nên chuyển `status` sang hủy thay vì xóa — endpoint xóa cứng hiện chỉ có ở `account` và `areas`.
 - Chưa làm: sinh hóa đơn tự động theo kỳ thanh toán (cron/`mark_overdue_invoices` mới chỉ có sẵn hàm, chưa gắn job), export PDF/Excel, endpoint tự-phục-vụ cho khách hàng (`/me/...`), tính thuế TNDN/kỳ khai thuế. Đây là các phần nghiệp vụ đã liệt kê trong `BÁO CÁO BTL...docx` nhưng chưa cấp bách cho bản chạy được đầu tiên.
 
 ## Lưu ý
